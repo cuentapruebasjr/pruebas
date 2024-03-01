@@ -1,0 +1,33 @@
+name: Workflow
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+permissions:
+          actions: read
+          contents: read # for actions/checkout to fetch co
+          issues: write # for checkmarx-ts/checkmarx-cxflow-github-action to write feedback to github issues
+          pull-requests: write # for checkmarx-ts/checkmarx-cxflow-github-action to write feedback to PR
+          security-events: write # for github/codeql-action/upload-sarif to upload SARIF result
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Checkmarx One CLI Action
+        uses: checkmarx/ast-github-action@main #Github Action version
+        with:
+          project_name: Github_ProyectoPrueba
+          cx_tenant: xpertal
+          base_uri: https://ast.checkmarx.net
+          cx_client_id: ${{ secrets.CLIENT_ID }}
+          cx_client_secret: ${{ secrets.CLIENT_ID_CHECKMARX }}
+          additional_params: --project-groups DESARROLLADOR-Pruebas --report-format sarif --output-path .
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with: 
+        # Path to SARIF file relative to the root of the repositor
+          sarif_file: cx_result.sarif
